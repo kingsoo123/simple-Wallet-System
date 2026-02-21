@@ -65,6 +65,10 @@ To start the Spring Boot application, run the following command in the project d
 
 mvn spring-boot:run
 
+Use postman link to access all endpoint routes
+
+https://documenter.getpostman.com/view/7106037/2sBXcEk1L4
+
 
 After running the command, the application should start, and you can access database with this url:
 
@@ -74,6 +78,4 @@ Please note you have to change the application propertiess datasource to match y
 
 ## **Api routes**
 
-Use postman link to access all endpoint routes
 
-https://documenter.getpostman.com/view/7106037/2sBXVhCAWc

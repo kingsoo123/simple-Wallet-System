@@ -10,6 +10,8 @@ import com.example.test.model.WalletBalance;
 import com.example.test.repo.AccountRepo;
 import com.example.test.repo.UserRepo;
 import com.example.test.repo.WalletBalanceRepo;
+
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
@@ -75,6 +77,7 @@ public class DoService implements ServiceCall {
     }
 
     @Override
+    @Transactional
     public Account doIntraTransfer(DoTransDto request) {
 
         String accountNumber = request.getToAccount();
@@ -92,22 +95,21 @@ public class DoService implements ServiceCall {
             accNum = new BigInteger(accountNumber);
         }
 
-        if (!existsByAccount(accNum)) {
-            throw new RuntimeException("Destination account does not exist");
-        }
-
         Account fromAcc = accountRepo.findByAccountNumber(fromAccNum);
         Account accountToCredit = accountRepo.findByAccountNumber(accNum);
-        if (fromAcc.getBalance().getAmount().compareTo(request.getAmount()) > 0) {
+        if (fromAcc.getBalance().getAmount().compareTo(request.getAmount()) < 0) {
+            throw new RuntimeException("Insufficient balance");
+        } else {
             accountToCredit.getBalance().setAmount(accountToCredit.getBalance().getAmount().add(request.getAmount()));
             fromAcc.getBalance().setAmount(fromAcc.getBalance().getAmount().subtract(request.getAmount()));
             accountRepo.save(fromAcc);
             accountRepo.save(accountToCredit);
-        } else {
-            System.out.println(fromAcc + "OOps you do not have enough amount::::::::::::::::::::::::::::::::::");
-        }
 
-        return fromAcc;
+            System.out.println(fromAcc.getAccountNumber() + " " + accountToCredit.getAccountNumber()
+                    + "DONEEEEEEE::::::::::::::::::::::::::::::::::");
+
+            return fromAcc;
+        }
 
     }
 
@@ -125,16 +127,12 @@ public class DoService implements ServiceCall {
         }
 
         Account accountToDeposit = accountRepo.findByAccountNumber(accNum);
-        accountToDeposit.getBalance().setAmount(accountToDeposit.getBalance().getAmount().add(request.getAmount()));;
+        accountToDeposit.getBalance().setAmount(accountToDeposit.getBalance().getAmount().add(request.getAmount()));
+        ;
         accountRepo.save(accountToDeposit);
-
 
         return accountToDeposit;
 
-    }
-
-    private boolean existsByAccount(BigInteger account) {
-        return accountRepo.existsByAccountNumber(account);
     }
 
 }
